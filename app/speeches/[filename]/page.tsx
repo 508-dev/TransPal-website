@@ -4,16 +4,16 @@ import Avatar from "@/components/Avatar";
 import Link from "next/link";
 
 type Props = {
-  params: {
+  params: Promise<{
     filename: string;
-  };
+  }>;
 };
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   // read route params
-  const { filename } = params;
+  const { filename } = await params;
 
   // fetch data
   const speech = await getSpeech(filename);
@@ -47,10 +47,11 @@ export async function generateStaticParams() {
   }));
 }
 export default async function Page({ params }: Props) {
-  const speech = await getSpeech(params.filename);
+  const { filename } = await params;
+  const speech = await getSpeech(filename);
   const name =
     speech.info.name ||
-    decodeURIComponent(params.filename).split(".").slice(0, -1).join(".");
+    decodeURIComponent(filename).split(".").slice(0, -1).join(".");
   const date = speech.info.date;
   return (
     <div className="container my-10">
@@ -65,7 +66,7 @@ export default async function Page({ params }: Props) {
             >
               <div className="flex-1">{item.text}</div>
               <Link
-                href={`/speeches/${params.filename}/${item.id}`}
+                href={`/speeches/${filename}/${item.id}`}
                 className="opacity-0 group-hover:opacity-100"
               >
                 <div className="text-gray-400">🔗</div>
