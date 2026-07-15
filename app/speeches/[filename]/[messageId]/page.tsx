@@ -3,17 +3,17 @@ import { getSpeech, getSpeeches } from "@/utils/speeches";
 import Avatar from "@/components/Avatar";
 
 type Props = {
-  params: {
+  params: Promise<{
     filename: string;
     messageId: string;
-  };
+  }>;
 };
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   // read route params
-  const { filename, messageId } = params;
+  const { filename, messageId } = await params;
 
   // fetch data
   const speech = await getSpeech(filename);
@@ -60,12 +60,12 @@ export async function generateStaticParams() {
     .flat();
 }
 export default async function Page({ params }: Props) {
-  const speech = await getSpeech(params.filename);
+  const { filename, messageId } = await params;
+  const speech = await getSpeech(filename);
   const name =
     speech.info.name ||
-    decodeURIComponent(params.filename).split(".").slice(0, -1).join(".");
+    decodeURIComponent(filename).split(".").slice(0, -1).join(".");
   const date = speech.info.date;
-  const messageId = params.messageId;
   const message = speech.content.find((item: any) => item.id === messageId)!;
   return (
     <div className="container my-10">
